@@ -4,6 +4,24 @@ import matplotlib.pyplot as plt
 
 df = pd.read_excel('data/Worked dataset- DataSense.xlsx')
 
+def miles_to_km(value):
+    if isinstance(value, str) and "Miles" in value:
+        try:
+            parts = value.replace("Miles", "").strip()
+            
+            if "-" in parts:
+                start, end = parts.split("-")
+                start_km = round(float(start) * 1.60934, 1)
+                end_km = round(float(end) * 1.60934, 1)
+                return f"{start_km}-{end_km} km"
+            else:
+                return f"{round(float(parts) * 1.60934, 1)} km"
+        except:
+            return value
+    return value
+
+df["Commute Distance"] = df["Commute Distance"].apply(miles_to_km)
+
 st.title("Análise de Público-Alvo - Bicicletas")
 
 
@@ -44,7 +62,8 @@ st.header("Segmento Ideal")
 segmento = df[
     (df["Age"] >= 30) &
     (df["Age"] <= 50) &
-    (df["Commute Distance"] == "0-1 Miles")
+    (df["Commute Distance"].str.contains("0.0-1.6 km"))
 ]
+
 
 st.write(segmento["Purchased Bike"].value_counts(normalize=True))
