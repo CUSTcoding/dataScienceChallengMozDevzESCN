@@ -1,31 +1,50 @@
+import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 df = pd.read_excel('data/Worked dataset- DataSense.xlsx')
 
-print(df.head(10))
+st.title("Análise de Público-Alvo - Bicicletas")
 
 
-publicoalvo = df[df['Purchased Bike'] == "Yes"]
+publico = df[df['Purchased Bike'] == "Yes"]
+
+st.header("Público-Alvo")
+st.write({
+    "Idade média": round(publico["Age"].mean(), 2),
+    "Renda média": round(publico["Income"].mean(), 2),
+    "Região": publico["Region"].mode()[0],
+    "Distância": publico["Commute Distance"].mode()[0],
+})
 
 
-perfil = {
-    "idade_media": publicoalvo["Age"].mean(),
-    "renda_media": publicoalvo["Income"].mean(),
-    "regiao_top": publicoalvo["Region"].mode()[0],
-    "distancia_top": publicoalvo["Commute Distance"].mode()[0],
-    "educacao_top": publicoalvo["Education"].mode()[0],
-}
-
-print(perfil)
-
-print(df["Region"].value_counts())
-
+st.header("Comparação")
 not_buy = df[df['Purchased Bike'] == "No"]
 
-comparacao = {
-    "idade_comprou": publicoalvo["Age"].mean(),
-    "idade_nao": not_buy["Age"].mean(),
-    "renda_comprou": publicoalvo["Income"].mean(),
-    "renda_nao": not_buy["Income"].mean(),
-}
-print(comparacao)
+st.write({
+    "Idade (comprou)": round(publico["Age"].mean(), 2),
+    "Idade (não comprou)": round(not_buy["Age"].mean(), 2),
+    "Renda (comprou)": round(publico["Income"].mean(), 2),
+    "Renda (não comprou)": round(not_buy["Income"].mean(), 2),
+})
+
+
+st.header("Taxa por Região")
+regiao = df.groupby("Region")["Purchased Bike"].value_counts(normalize=True).unstack()
+
+st.bar_chart(regiao)
+
+
+st.header("Impacto da Distância")
+distancia = df.groupby("Commute Distance")["Purchased Bike"].value_counts(normalize=True).unstack()
+
+st.bar_chart(distancia)
+
+st.header("Segmento Ideal")
+segmento = df[
+    (df["Age"] >= 30) &
+    (df["Age"] <= 50) &
+    (df["Commute Distance"] == "0-1 Miles")
+]
+
+st.write(segmento["Purchased Bike"].value_counts(normalize=True))
